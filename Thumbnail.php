@@ -2,6 +2,7 @@
 
 namespace omnilight\thumbnails;
 
+use Imagine\Image\ImageInterface;
 use yii\base\Component;
 
 
@@ -34,7 +35,9 @@ class Thumbnail extends Component
         $createThumbnail = !file_exists($cacheFile) || (filemtime($cacheFile) < filemtime($image));
 
         if ($createThumbnail) {
-
+            /** @var ImageInterface $imaging */
+            $imaging = call_user_func($callable, $image);
+            $imaging->save($cacheFile);
         }
 
         return $cacheUrl;
