@@ -4,6 +4,7 @@ namespace omnilight\thumbnails;
 
 use Imagine\Image\ImageInterface;
 use yii\base\Component;
+use yii\helpers\FileHelper;
 
 
 /**
@@ -29,7 +30,8 @@ class Thumbnail extends Component
     public function url($image, $callable, $name = '')
     {
         $cacheImageName = md5(serialize([$image, $name])) . '.' . pathinfo($image, PATHINFO_EXTENSION);
-        $cacheFile = \Yii::getAlias($this->cachePath) . '/' . $cacheImageName;
+        $cachePath = \Yii::getAlias($this->cachePath);
+        $cacheFile = $cachePath . '/' . $cacheImageName;
         $cacheUrl = \Yii::getAlias($this->cacheUrl) . '/' . $cacheImageName;
 
         $createThumbnail = !file_exists($cacheFile) || (filemtime($cacheFile) < filemtime($image));
@@ -37,6 +39,8 @@ class Thumbnail extends Component
         if ($createThumbnail) {
             /** @var ImageInterface $imaging */
             $imaging = call_user_func($callable, $image);
+            if (!is_dir($cachePath))
+                FileHelper::createDirectory($cachePath);
             $imaging->save($cacheFile);
         }
 
