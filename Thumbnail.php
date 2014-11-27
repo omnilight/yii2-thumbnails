@@ -29,6 +29,9 @@ class Thumbnail extends Component
      */
     public function url($image, $callable, $name = '')
     {
+        if (!file_exists($image))
+            return '';
+
         $cacheImageName = md5(serialize([$image, $name])) . '.' . pathinfo($image, PATHINFO_EXTENSION);
         $cachePath = \Yii::getAlias($this->cachePath);
         $cacheFile = $cachePath . '/' . $cacheImageName;
