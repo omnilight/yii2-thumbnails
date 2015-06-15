@@ -2,10 +2,13 @@
 
 namespace omnilight\thumbnails;
 
+use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\ManipulatorInterface;
 use yii\base\Component;
+use yii\base\InvalidParamException;
 use yii\helpers\FileHelper;
+use yii\imagine\Image;
 
 
 /**
@@ -13,6 +16,15 @@ use yii\helpers\FileHelper;
  */
 class Thumbnail extends Component
 {
+    /**
+     * Will keep original ratio of the image
+     */
+    const SIZE_MODE_ORIGINAL = 'original';
+    /**
+     * Will use ratio of the desired image
+     */
+    const SIZE_MODE_DESIRED = 'desired';
+
     /**
      * @var string Cache path for thumbnails
      */
@@ -58,13 +70,24 @@ class Thumbnail extends Component
      * ```
      * @param integer $width
      * @param integer $height
-     * @param string $mode
+     * @param string $sizeMode
      * @return callable
      */
-    public static function thumb($width, $height, $mode = ManipulatorInterface::THUMBNAIL_INSET)
+    public static function thumb($width, $height, $sizeMode = self::SIZE_MODE_ORIGINAL)
     {
-        return function($image) use ($width, $height, $mode) {
-            return \yii\imagine\Image::thumbnail($image, $width, $height, $mode);
-        };
+        if ($sizeMode == self::SIZE_MODE_DESIRED) {
+            return function($image) use ($width, $height) {
+                return Image::thumbnail($image, $width, $height, ManipulatorInterface::THUMBNAIL_INSET);
+            };
+        }
+
+        if ($sizeMode == self::SIZE_MODE_ORIGINAL) {
+            return function($image) use ($width, $height) {
+                return Image::getImagine()->open($image)->thumbnail(new Box($width, $height));
+            };
+        }
+
+        throw new InvalidParamException('Unknown $sizeMode');
+
     }
 } 
